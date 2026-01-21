@@ -18,7 +18,7 @@ function App() {
 
             <ul className="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small">
               <li>
-                <Link to="/" className="nav-link text-secondary">
+                <Link to="/" className="nav-link text-primary">
                   <House size={24} className="d-block mx-auto mb-1" />
                   Accueil
                 </Link>
