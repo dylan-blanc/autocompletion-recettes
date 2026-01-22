@@ -4,14 +4,13 @@ import {
     searchMealsByName,
     getMealsByArea,
     findMatchingArea,
-    filterSuggestions,
-    AVAILABLE_AREAS
+    filterSuggestions
 } from "../utils/APIMealDB";
 
 function SearchForFood({ onSuggestionsChange }) {
 
-    const [query, setQuery] = useState('');
-    const [recipes, setRecipes] = useState([]);
+
+
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState({
         startsWith: [],
@@ -26,18 +25,7 @@ function SearchForFood({ onSuggestionsChange }) {
 
 
 
-    useEffect(() => {
-        const fetchRecipes = async () => {
-            try {
-                const meals = await searchMealsByName(query);
-                setRecipes(meals);
-            }
-            catch (error) {
-                console.error("Erreur : ", error);
-            }
-        };
-        if (query) fetchRecipes();
-    }, [query]);
+
 
     // Remonter les suggestions et le pays détecté au parent
     useEffect(() => {
@@ -127,7 +115,6 @@ function SearchForFood({ onSuggestionsChange }) {
 
 
     const handleSelect = (meal) => {
-        setQuery(meal.strMeal);
         setSearchTerm(meal.strMeal);
         setShowSuggestions(false);
         setSelectedIndex(-1);
@@ -222,10 +209,7 @@ function SearchForFood({ onSuggestionsChange }) {
         </div>
     );
 
-    function SearchAllRelatedFoods() {
 
-
-    }
 
 }
 

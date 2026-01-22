@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import RecipeDetails from './pages/RecipeDetails';
 import SearchResults from './pages/SearchResults';
 import Display from './pages/Display';
-import { House, Speedometer2, Table } from 'react-bootstrap-icons';
+import { House, Speedometer2 } from 'react-bootstrap-icons';
 import SearchForFood from './components/SearchBar';
 
 function App() {

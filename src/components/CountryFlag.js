@@ -41,7 +41,6 @@ const AREA_TO_FLAG_CODE = {
     "Slovakian": "sk",
     "Uruguayan": "uy",
     "Venezulan": "ve",
-    "Vietnamese": "vn",
     "Syrian": "sy",
     "Australian": "au",
     "Argentinian": "ar"
