@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
-// Liste des pays/zones disponibles dans l'API TheMealDB
-const AVAILABLE_AREAS = [
-    "American", "British", "Canadian", "Chinese", "Croatian", "Dutch",
-    "Egyptian", "Filipino", "French", "Greek", "Indian", "Irish",
-    "Italian", "Jamaican", "Japanese", "Kenyan", "Malaysian", "Mexican",
-    "Moroccan", "Polish", "Portuguese", "Russian", "Spanish", "Thai",
-    "Tunisian", "Turkish", "Ukrainian", "Vietnamese"
-];
+import {
+    searchMealsByName,
+    getMealsByArea,
+    findMatchingArea,
+    filterSuggestions,
+    AVAILABLE_AREAS
+} from "../utils/APIMealDB";
 
 function SearchForFood({ onSuggestionsChange }) {
 
@@ -23,37 +21,16 @@ function SearchForFood({ onSuggestionsChange }) {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [searchMode, setSearchMode] = useState('name'); // 'name' ou 'area'
+    const [matchedArea, setMatchedArea] = useState(null);
 
 
-    const filterSuggestions = (meals, query) => {
-        const lowerQuery = query.toLowerCase();
-        const startsWith = meals.filter(meal => meal.strMeal.toLowerCase().startsWith(lowerQuery)).slice(0, 5);
-        const contains = meals.filter(meal => {
-            const name = meal.strMeal.toLowerCase();
-            return name.includes(lowerQuery) && !name.startsWith(lowerQuery);
-        }).slice(0, 5);
 
-        return { startsWith, contains };
-    };
-
-    const getingredients = (meal) => {
-        const ingredients = [];
-        for (let i = 1; i <= 20; i++) {
-            const ingredient = meal[`strIngredients${i}`];
-            const measure = meal[`strMeasure${i}`];
-            if (ingredient && ingredient.trim()) {
-                ingredients.push(`${measure} ${ingredient}`);
-            }
-        }
-        return ingredients;
-    };
 
     useEffect(() => {
         const fetchRecipes = async () => {
             try {
-                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
-                const data = await response.json();
-                setRecipes(data.meals || []);
+                const meals = await searchMealsByName(query);
+                setRecipes(meals);
             }
             catch (error) {
                 console.error("Erreur : ", error);
@@ -62,12 +39,12 @@ function SearchForFood({ onSuggestionsChange }) {
         if (query) fetchRecipes();
     }, [query]);
 
-    // Remonter les suggestions au parent quand elles changent
+    // Remonter les suggestions et le pays détecté au parent
     useEffect(() => {
         if (onSuggestionsChange) {
-            onSuggestionsChange(suggestions);
+            onSuggestionsChange({ suggestions, matchedArea });
         }
-    }, [suggestions, onSuggestionsChange]);
+    }, [suggestions, matchedArea, onSuggestionsChange]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -96,30 +73,26 @@ function SearchForFood({ onSuggestionsChange }) {
     };
 
 
-    // Vérifie si le terme correspond à un pays (area)
-    const findMatchingArea = (term) => {
-        const lowerTerm = term.toLowerCase();
-        return AVAILABLE_AREAS.find(area => area.toLowerCase() === lowerTerm);
-    };
+
 
     const fetchSuggestions = async (term) => {
         setLoading(true);
         try {
-            const matchedArea = findMatchingArea(term);
+            const areaFound = findMatchingArea(term);
 
-            if (matchedArea) {
+            if (areaFound) {
                 // Recherche par pays/area
                 setSearchMode('area');
-                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${matchedArea}`);
-                const data = await response.json();
-                if (data.meals) {
+                setMatchedArea(areaFound); // Stocker le pays détecté
+                const meals = await getMealsByArea(areaFound);
+                if (meals.length > 0) {
                     // L'API filter ne renvoie que idMeal, strMeal, strMealThumb
                     // On met tous les résultats dans startsWith pour simplifier
                     setSuggestions({
-                        startsWith: data.meals.map(meal => ({
+                        startsWith: meals.map(meal => ({
                             ...meal,
-                            strArea: matchedArea,
-                            strCategory: 'Plat ' + matchedArea
+                            strArea: areaFound,
+                            strCategory: 'Plat ' + areaFound
                         })).slice(0, 10),
                         contains: []
                     });
@@ -132,10 +105,10 @@ function SearchForFood({ onSuggestionsChange }) {
             } else {
                 // Recherche par nom de plat
                 setSearchMode('name');
-                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${term}`);
-                const data = await response.json();
-                if (data.meals) {
-                    setSuggestions(filterSuggestions(data.meals, term));
+                setMatchedArea(null); // Pas de pays détecté
+                const meals = await searchMealsByName(term);
+                if (meals.length > 0) {
+                    setSuggestions(filterSuggestions(meals, term));
                     setShowSuggestions(true);
                 } else {
                     // Aucun résultat trouvé - vider les suggestions
@@ -206,7 +179,7 @@ function SearchForFood({ onSuggestionsChange }) {
                                     <div className="d-flex gap-2 w-100 justify-content-between">
                                         <div>
                                             <h6 className="mb-0">{meal.strMeal}</h6>
-                                            <p className="mb-0 opacity-75">{meal.strCategory} - {meal.strArea}</p>
+                                            <p className="mb-0 opacity-75">{meal.strCategory}</p>
                                         </div>
                                     </div>
                                 </Link>

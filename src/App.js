@@ -10,9 +10,11 @@ import SearchForFood from './components/SearchBar';
 
 function App() {
   const [searchResults, setSearchResults] = useState({ startsWith: [], contains: [] });
+  const [matchedArea, setMatchedArea] = useState(null);
 
-  const handleSuggestionsChange = (suggestions) => {
+  const handleSuggestionsChange = ({ suggestions, matchedArea }) => {
     setSearchResults(suggestions);
+    setMatchedArea(matchedArea);
   };
 
   return (
@@ -45,12 +47,12 @@ function App() {
                   RecipeDetails
                 </Link>
               </li> */}
-              <li>
+              {/* <li>
                 <Link to="/search-results" className="nav-link text-white">
                   <Table size={24} className="d-block mx-auto mb-1" />
                   SearchResults
                 </Link>
-              </li>
+              </li> */}
               {/* <li>
                 <a href="#" className="nav-link text-white">
                   <svg className="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#grid"></use></svg>
@@ -71,7 +73,14 @@ function App() {
         <div className="container d-flex flex-wrap justify-content-center">
           <div className="col-12 col-lg-auto mb-2 mb-lg-0 me-lg-auto d-flex align-items-center">
             <SearchForFood onSuggestionsChange={handleSuggestionsChange} />
-            <Link to="/search-results" state={{ results: searchResults }} id="GlobalSearchButton" className="btn btn-light text-dark ms-2">Rechercher</Link>
+            <Link
+              to={matchedArea ? `/search-results?area=${matchedArea}` : "/search-results"}
+              state={{ results: searchResults }}
+              id="GlobalSearchButton"
+              className="btn btn-light text-dark ms-2"
+            >
+              Rechercher
+            </Link>
           </div>
           {/* <div className="text-end">
             <button type="button" className="btn btn-light text-dark me-2">Login</button>

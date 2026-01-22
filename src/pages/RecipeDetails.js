@@ -1,6 +1,9 @@
 import './RecipeDetails.css';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { getMealById, getIngredients } from '../utils/APIMealDB';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 
 function RecipeDetails() {
     const { id } = useParams();
@@ -11,9 +14,8 @@ function RecipeDetails() {
     useEffect(() => {
         const fetchRecipe = async () => {
             try {
-                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
-                const data = await response.json();
-                setRecipe(data.meals[0]);
+                const mealData = await getMealById(id);
+                setRecipe(mealData);
             } catch (error) {
                 setError(error);
             } finally {
@@ -23,9 +25,11 @@ function RecipeDetails() {
         fetchRecipe();
     }, [id]);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
-    if (!recipe) return <div>Recipe not found</div>;
+    if (loading) return <LoadingSpinner message="Chargement de la recette..." />;
+    if (error) return <ErrorMessage message={`Erreur: ${error.message}`} />;
+    if (!recipe) return <ErrorMessage message="Recette non trouvée" variant="warning" />;
+
+    const ingredients = getIngredients(recipe);
 
     return (
         <div className="recipe-details container text-center">
@@ -60,19 +64,12 @@ function RecipeDetails() {
                     </tr>
                 </thead>
                 <tbody>
-                    {[...Array(20)].map((_, i) => {
-                        const ingredient = recipe[`strIngredient${i + 1}`];
-                        const measure = recipe[`strMeasure${i + 1}`];
-                        if (ingredient && ingredient.trim() !== '') {
-                            return (
-                                <tr key={i}>
-                                    <td>{ingredient}</td>
-                                    <td>{measure}</td>
-                                </tr>
-                            );
-                        }
-                        return null;
-                    })}
+                    {ingredients.map((item, i) => (
+                        <tr key={i}>
+                            <td>{item.ingredient}</td>
+                            <td>{item.measure}</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
