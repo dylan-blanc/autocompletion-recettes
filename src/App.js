@@ -1,12 +1,22 @@
 import './App.css';
+import { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import RecipeDetails from './pages/RecipeDetails';
 import SearchResults from './pages/SearchResults';
+import Display from './pages/Display';
 import { House, Speedometer2, Table } from 'react-bootstrap-icons';
+import SearchForFood from './components/SearchBar';
 
 function App() {
+  const [searchResults, setSearchResults] = useState({ startsWith: [], contains: [] });
+
+  const handleSuggestionsChange = (suggestions) => {
+    setSearchResults(suggestions);
+  };
+
   return (
+
     <div className="App">
 
       <div className="px-3 py-2 bg-dark text-white">
@@ -24,11 +34,17 @@ function App() {
                 </Link>
               </li>
               <li>
+                <Link to="/Display" className="nav-link text-white">
+                  <Speedometer2 size={24} className="d-block mx-auto mb-1" />
+                  Toutes nos Recettes
+                </Link>
+              </li>
+              {/* <li>
                 <Link to="/recipe-details" className="nav-link text-white">
                   <Speedometer2 size={24} className="d-block mx-auto mb-1" />
                   RecipeDetails
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link to="/search-results" className="nav-link text-white">
                   <Table size={24} className="d-block mx-auto mb-1" />
@@ -53,10 +69,10 @@ function App() {
       </div>
       <div className="px-3 py-2 border-bottom mb-3">
         <div className="container d-flex flex-wrap justify-content-center">
-          <form className="col-12 col-lg-auto mb-2 mb-lg-0 me-lg-auto">
-            <input type="search" className="form-control" placeholder="Search..." aria-label="Search" />
-          </form>
-
+          <div className="col-12 col-lg-auto mb-2 mb-lg-0 me-lg-auto d-flex align-items-center">
+            <SearchForFood onSuggestionsChange={handleSuggestionsChange} />
+            <Link to="/search-results" state={{ results: searchResults }} id="GlobalSearchButton" className="btn btn-light text-dark ms-2">Rechercher</Link>
+          </div>
           {/* <div className="text-end">
             <button type="button" className="btn btn-light text-dark me-2">Login</button>
             <button type="button" className="btn btn-primary">Sign-up</button>
@@ -84,8 +100,9 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/recipe-details" element={<RecipeDetails />} />
+          <Route path="/recipe-details/:id" element={<RecipeDetails />} />
           <Route path="/search-results" element={<SearchResults />} />
+          <Route path="/Display" element={<Display />} />
         </Routes>
       </main>
     </div>
