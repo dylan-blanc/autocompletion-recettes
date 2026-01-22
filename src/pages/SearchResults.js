@@ -10,8 +10,6 @@ function SearchResults() {
     const [searchParams] = useSearchParams();
     const [filteredMeals, setFilteredMeals] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [filterType, setFilterType] = useState(null);
-    const [filterValue, setFilterValue] = useState(null);
 
     // Résultats de la recherche par nom (passés via state)
     const results = location.state?.results || { startsWith: [], contains: [] };
@@ -25,15 +23,11 @@ function SearchResults() {
     useEffect(() => {
         const fetchFilteredMeals = async () => {
             setLoading(true);
-            try {
+            try { // condition si l'input est une catégorie ou un pays(condition speciale auquel cas)
                 if (categoryParam) {
-                    setFilterType('category');
-                    setFilterValue(categoryParam);
                     const meals = await getMealsByCategory(categoryParam);
                     setFilteredMeals(meals);
                 } else if (areaParam) {
-                    setFilterType('area');
-                    setFilterValue(areaParam);
                     const meals = await getMealsByArea(areaParam);
                     setFilteredMeals(meals);
                 }
